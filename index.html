@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Comfama · CPI — Catálogo de iFlows · Integración Omnicanal</title>
+<meta name="description" content="Resumen interactivo de los iFlows del proyecto de integración omnicanal de Comfama sobre SAP Cloud Integration: Salesforce, Genesys y sistemas internos.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230d1b2a'/%3E%3Crect x='35' y='35' width='30' height='30' fill='%234ecdc4'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark"></span>Comfama · CPI
+      <small>Integración Omnicanal · v59.0</small>
+    </div>
+
+    <nav class="nav" aria-label="Navegación">
+      <a href="#overview">Resumen<span class="count">01</span></a>
+      <a href="#architecture">Arquitectura<span class="count">02</span></a>
+      <a href="#flows">iFlows<span class="count">8</span></a>
+      <a href="#endpoints">Endpoints<span class="count">8</span></a>
+      <a href="#externals">Sistemas externos<span class="count">3</span></a>
+      <div class="nav-section">Detalle técnico</div>
+      <a href="#scripts">Scripts Groovy<span class="count">47</span></a>
+      <a href="#mappings">Message Mappings<span class="count">10</span></a>
+      <a href="#xsds">XSDs<span class="count">13</span></a>
+      <a href="#parameters">Parámetros<span class="count">2</span></a>
+    </nav>
+
+    <div class="sidebar-foot">
+      Salesforce API · v59.0<br>
+      Sandbox · qacomfama<br>
+      Partner: Keyrus
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <section id="overview" class="hero reveal">
+      <div class="eyebrow">SAP Cloud Integration · Proyecto Comfama</div>
+      <h1>
+        Catálogo de <em>iFlows</em> <span class="underline">de integración omnicanal</span>
+      </h1>
+      <p class="lede">
+        Conjunto de 8 iFlows desplegados sobre <strong>SAP Cloud Integration</strong>
+        que orquestan la integración de Comfama con <strong>Salesforce</strong>
+        como CRM central, recibiendo interacciones de <strong>Genesys</strong>
+        y exponiendo APIs para los sistemas internos. Un orquestador único distribuye
+        a tres workers (Accounts, Contacts, Cases), un worker programado sube los
+        anexos de forma asíncrona, y dos servicios de consulta exponen los datos
+        de vuelta al ecosistema Comfama.
+      </p>
+
+      <dl id="meta-grid" class="meta"></dl>
+    </section>
+
+    <div id="metrics" class="metrics reveal"></div>
+
+    <!-- ARCH -->
+    <section id="architecture" class="reveal">
+      <div class="section-head">
+        <div>
+          <div class="num">02 — Arquitectura</div>
+          <h2>Un <em>orquestador</em>, tres workers, dos consultas</h2>
+        </div>
+        <p class="blurb">
+          El endpoint <code>/Account_Cases_Root</code> es la puerta única. Detrás,
+          ProcessDirect distribuye a sub-flows independientes que pueden invocarse
+          directamente también. Un worker programado procesa anexos en segundo plano.
+        </p>
+      </div>
+
+      <div class="arch">
+        <svg viewBox="0 0 980 580" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagrama de arquitectura de los iFlows">
+          <defs>
+            <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#9aa9bd"/>
+            </marker>
+            <marker id="arr-a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#4ecdc4"/>
+            </marker>
+            <style>
+              .lbl-l{ font: 11px "JetBrains Mono", monospace; fill: #9aa9bd; letter-spacing:.15em; text-transform: uppercase;}
+              .lbl-t{ font: 600 13px "Inter Tight", sans-serif; fill: #f4ecd8;}
+              .lbl-s{ font: 11px "Inter Tight", sans-serif; fill: #c8bfa6;}
+              .lbl-mono{ font: 11px "JetBrains Mono", monospace; fill: #4ecdc4;}
+              .lyr{ fill: #11243a; stroke: #2a4365;}
+              .box{ fill: #18324f; stroke: #2a4365;}
+              .box-o{ fill: #18324f; stroke: #ff6b3d; stroke-width: 1.5;}
+              .box-w{ fill: #18324f; stroke: #4ecdc4; stroke-width: 1.2;}
+              .box-q{ fill: #18324f; stroke: #b794f4; stroke-width: 1.2;}
+              .box-s{ fill: #18324f; stroke: #e6a23c; stroke-width: 1.2;}
+              .box-x{ fill: #0d1b2a; stroke: #2a4365; stroke-dasharray: 3 3;}
+              .arrow{ stroke: #6c7c95; stroke-width: 1.2; fill: none; marker-end: url(#arr);}
+              .arrow-a{ stroke: #4ecdc4; stroke-width: 1.4; fill: none; marker-end: url(#arr-a);}
+            </style>
+          </defs>
+
+          <!-- LAYER: Sources (top) -->
+          <rect class="lyr" x="20" y="20" width="940" height="80" rx="2"/>
+          <text class="lbl-l" x="36" y="44">Sistemas fuente · canales de entrada</text>
+          <rect class="box-x" x="36" y="56" width="180" height="34" rx="2"/>
+          <text class="lbl-t" x="126" y="78" text-anchor="middle">Genesys</text>
+          <rect class="box-x" x="232" y="56" width="240" height="34" rx="2"/>
+          <text class="lbl-t" x="352" y="78" text-anchor="middle">Sistemas internos Comfama</text>
+          <rect class="box-x" x="488" y="56" width="200" height="34" rx="2"/>
+          <text class="lbl-t" x="588" y="78" text-anchor="middle">Aplicaciones cliente</text>
+
+          <!-- LAYER: Public endpoints -->
+          <rect class="lyr" x="20" y="120" width="940" height="60" rx="2"/>
+          <text class="lbl-l" x="36" y="142">Endpoints HTTPS</text>
+          <text class="lbl-mono" x="36" y="170">/Account_Cases_Root</text>
+          <text class="lbl-mono" x="240" y="170">/v2/genesys/interacciones</text>
+          <text class="lbl-mono" x="490" y="170">/v1/clientes/consulta</text>
+          <text class="lbl-mono" x="730" y="170">/v2/casos/consulta</text>
+
+          <!-- Orquestador -->
+          <rect class="box-o" x="36" y="200" width="180" height="56" rx="2"/>
+          <text class="lbl-t" x="126" y="222" text-anchor="middle">Omnicanalidad_Root</text>
+          <text class="lbl-s" x="126" y="240" text-anchor="middle">Orquestador</text>
+
+          <!-- Interacciones -->
+          <rect class="box-q" x="232" y="200" width="200" height="56" rx="2"/>
+          <text class="lbl-t" x="332" y="222" text-anchor="middle">Comfama_Interacciones</text>
+          <text class="lbl-s" x="332" y="240" text-anchor="middle">Ingesta · Bulk API</text>
+
+          <!-- Consulta Clientes -->
+          <rect class="box-q" x="448" y="200" width="200" height="56" rx="2"/>
+          <text class="lbl-t" x="548" y="222" text-anchor="middle">Consulta_de_Clientes</text>
+          <text class="lbl-s" x="548" y="240" text-anchor="middle">SOQL dinámico</text>
+
+          <!-- Consulta Casos -->
+          <rect class="box-q" x="664" y="200" width="200" height="56" rx="2"/>
+          <text class="lbl-t" x="764" y="222" text-anchor="middle">Consulta_de_casos</text>
+          <text class="lbl-s" x="764" y="240" text-anchor="middle">Cases + Comments + Adjuntos</text>
+
+          <!-- LAYER: Workers (ProcessDirect) -->
+          <rect class="lyr" x="20" y="288" width="940" height="100" rx="2"/>
+          <text class="lbl-l" x="36" y="312">ProcessDirect · workers internos</text>
+
+          <rect class="box-w" x="36" y="328" width="200" height="52" rx="2"/>
+          <text class="lbl-t" x="136" y="350" text-anchor="middle">Comfama_Customers</text>
+          <text class="lbl-mono" x="136" y="368" text-anchor="middle">/CreateAccounts</text>
+
+          <rect class="box-w" x="252" y="328" width="200" height="52" rx="2"/>
+          <text class="lbl-t" x="352" y="350" text-anchor="middle">Comfama_Contact_C</text>
+          <text class="lbl-mono" x="352" y="368" text-anchor="middle">/CreateContact</text>
+
+          <rect class="box-w" x="468" y="328" width="200" height="52" rx="2"/>
+          <text class="lbl-t" x="568" y="350" text-anchor="middle">Comfama_Cases</text>
+          <text class="lbl-mono" x="568" y="368" text-anchor="middle">/CreateCases</text>
+
+          <!-- Worker programado -->
+          <rect class="box-s" x="700" y="328" width="240" height="52" rx="2"/>
+          <text class="lbl-t" x="820" y="350" text-anchor="middle">Comfama_Cases_Anexos_Worker</text>
+          <text class="lbl-mono" x="820" y="368" text-anchor="middle">Cron · 0 * * * * ?</text>
+
+          <!-- LAYER: Data Stores -->
+          <rect class="lyr" x="20" y="408" width="500" height="60" rx="2"/>
+          <text class="lbl-l" x="36" y="430">Data Stores (intermediario asíncrono)</text>
+          <rect class="box-x" x="36" y="438" width="220" height="28" rx="2"/>
+          <text class="lbl-t" x="146" y="457" text-anchor="middle">Anexos_Pendientes</text>
+          <rect class="box-x" x="272" y="438" width="220" height="28" rx="2"/>
+          <text class="lbl-t" x="382" y="457" text-anchor="middle">Anexos_Fallidos</text>
+
+          <!-- LAYER: Salesforce -->
+          <rect class="lyr" x="540" y="408" width="420" height="160" rx="2"/>
+          <text class="lbl-l" x="556" y="430">Salesforce · destino (qacomfama)</text>
+          <rect class="box" x="556" y="438" width="120" height="28" rx="2"/>
+          <text class="lbl-t" x="616" y="457" text-anchor="middle">Account</text>
+          <rect class="box" x="688" y="438" width="120" height="28" rx="2"/>
+          <text class="lbl-t" x="748" y="457" text-anchor="middle">Contact</text>
+          <rect class="box" x="820" y="438" width="120" height="28" rx="2"/>
+          <text class="lbl-t" x="880" y="457" text-anchor="middle">Case</text>
+          <rect class="box" x="556" y="476" width="180" height="28" rx="2"/>
+          <text class="lbl-t" x="646" y="495" text-anchor="middle">CaseComment</text>
+          <rect class="box" x="748" y="476" width="192" height="28" rx="2"/>
+          <text class="lbl-t" x="844" y="495" text-anchor="middle">ContentVersion + Link</text>
+          <rect class="box" x="556" y="514" width="384" height="28" rx="2"/>
+          <text class="lbl-t" x="748" y="533" text-anchor="middle">REST API + Bulk API (v59.0)</text>
+
+          <!-- Arrows: sources -> endpoints -->
+          <path class="arrow" d="M126 90 V 195"/>
+          <path class="arrow" d="M332 90 V 195"/>
+          <path class="arrow" d="M548 90 V 195"/>
+          <path class="arrow" d="M764 90 V 195"/>
+
+          <!-- Orquestador -> 3 workers (ProcessDirect) -->
+          <path class="arrow-a" d="M126 258 V 322"/>
+          <path class="arrow-a" d="M180 258 C 220 290, 280 290, 332 322"/>
+          <path class="arrow-a" d="M200 258 C 350 290, 480 290, 560 322"/>
+
+          <!-- Cases -> DS Pendientes -->
+          <path class="arrow" d="M520 380 C 360 400, 200 410, 146 432"/>
+          <!-- DS Pendientes -> Worker programado -->
+          <path class="arrow" d="M260 452 C 500 452, 700 410, 820 384"/>
+          <!-- Worker -> DS Fallidos (en error) -->
+          <path class="arrow" d="M780 380 C 600 400, 480 420, 382 436"/>
+
+          <!-- Workers -> Salesforce -->
+          <path class="arrow" d="M236 354 H 552"/>
+          <path class="arrow" d="M452 354 H 552"/>
+          <path class="arrow" d="M668 354 C 700 380, 720 400, 736 432"/>
+
+          <!-- Consulta flows -> Salesforce -->
+          <path class="arrow" d="M548 258 C 580 380, 620 400, 644 432"/>
+          <path class="arrow" d="M764 258 C 800 380, 820 400, 860 432"/>
+          <path class="arrow" d="M332 258 C 480 290, 700 380, 870 432"/>
+        </svg>
+      </div>
+    </section>
+
+    <!-- FLOWS -->
+    <section id="flows" class="reveal">
+      <div class="section-head">
+        <div>
+          <div class="num">03 — iFlows</div>
+          <h2>Los <em>8 iFlows</em> uno por uno</h2>
+        </div>
+        <p class="blurb">
+          Cada tarjeta muestra el endpoint expuesto, las llamadas externas, los sub-procesos
+          y la lógica de negocio principal. Usa los filtros para enfocarte en orquestación,
+          workers, consultas, ingestión o jobs programados.
+        </p>
+      </div>
+      <div id="flow-filters" class="filters"></div>
+      <div id="flows-grid" class="cards"></div>
+    </section>
+
+    <!-- ENDPOINTS -->
+    <section id="endpoints" class="reveal">
+      <div class="section-head">
+        <div>
+          <div class="num">04 — Endpoints</div>
+          <h2>Superficie <em>expuesta</em></h2>
+        </div>
+        <p class="blurb">
+          Endpoints HTTPS públicos consumibles desde los sistemas Comfama
+          más los disparadores internos (ProcessDirect y Cron).
+        </p>
+      </div>
+      <div class="table-wrap">
+        <table class="t">
+          <thead><tr><th>Método</th><th>Path</th><th>iFlow</th><th>Propósito</th></tr></thead>
+          <tbody id="endpoints-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EXTERNAL SYSTEMS -->
+    <section id="externals" class="reveal">
+      <div class="section-head">
+        <div>
+          <div class="num">05 — Sistemas externos</div>
+          <h2>Con quién <em>habla</em> el ecosistema</h2>
+        </div>
+        <p class="blurb">
+          Tres actores principales: Salesforce como destino, Genesys como fuente de
+          interacciones, y los sistemas Comfama como consumidores.
+        </p>
+      </div>
+      <div id="externals-grid" class="cards"></div>
+    </section>
+
+    <!-- SCRIPTS -->
+    <section id="scripts" class="reveal">
+      <div class="section-head">
+        <div>
+          <div class="num">06 — Scripts Groovy</div>
+          <h2>La <em>lógica</em> embebida</h2>
+        </div>
+        <p class="blurb">
+          47 archivos Groovy distribuidos en los 8 iFlows (agrupados aquí por funcionalidad).
+          Validan payloads, transforman entre JSON/XML/CSV, manejan errores de Salesforce y
+          orquestan splitters y data stores.
+        </p>
+      </div>
+      <div id="scripts-wrap"></div>
+    </section>
+
+    <!-- MAPPINGS -->
+    <section id="mappings" class="reveal">
+      <div class="section-head">
+        <div>
+          <div class="num">07 — Message Mappings</div>
+          <h2>Traducciones <em>estructurales</em></h2>
+        </div>
+        <p class="blurb">
+          Mappings .mmap que convierten entre el modelo Comfama y los nombres
+          de campo API de Salesforce.
+        </p>
+      </div>
+      <div class="table-wrap">
+        <table class="t">
+          <thead><tr><th>iFlow</th><th>Mapping</th><th>Descripción</th></tr></thead>
+          <tbody id="mappings-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- XSDs -->
+    <section id="xsds" class="reveal">
+      <div class="section-head">
+        <div>
+          <div class="num">08 — Esquemas XSD</div>
+          <h2>Contratos de <em>interfaz</em></h2>
+        </div>
+        <p class="blurb">
+          XSDs que definen la estructura de cada source/target — base de los
+          message mappings y la validación.
+        </p>
+      </div>
+      <div class="table-wrap">
+        <table class="t">
+          <thead><tr><th>iFlow</th><th>Archivo</th><th>Propósito</th></tr></thead>
+          <tbody id="xsds-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PARAMETERS -->
+    <section id="parameters" class="reveal">
+      <div class="section-head">
+        <div>
+          <div class="num">09 — Parámetros</div>
+          <h2>Configuración <em>externalizada</em></h2>
+        </div>
+        <p class="blurb">
+          Variables editables sin re-deploy: credenciales, URLs, frecuencias y límites
+          definidos en los <code>parameters.prop</code> de cada iFlow.
+        </p>
+      </div>
+      <div id="parameters-wrap"></div>
+    </section>
+
+    <footer class="foot">
+      <div>Generado desde los paquetes .zip de SAP Integration Suite</div>
+      <div>Keyrus · Comfama · 2026</div>
+    </footer>
+
+  </main>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
