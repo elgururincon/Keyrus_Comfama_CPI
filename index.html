@@ -190,32 +190,32 @@
           <text class="lbl-t" x="748" y="533" text-anchor="middle">REST API + Bulk API (v59.0)</text>
 
           <!-- Arrows: sources -> endpoints -->
-          <path class="arrow" d="M126 90 V 195"/>
-          <path class="arrow" d="M332 90 V 195"/>
-          <path class="arrow" d="M548 90 V 195"/>
-          <path class="arrow" d="M764 90 V 195"/>
+          <path class="arrow" d="M126 90 V195"/>
+          <path class="arrow" d="M332 90 V195"/>
+          <path class="arrow" d="M548 90 V195"/>
+          <path class="arrow" d="M764 90 V195"/>
 
           <!-- Orquestador -> 3 workers (ProcessDirect) -->
           <path class="arrow-a" d="M126 258 V272 H136 V322"/>
           <path class="arrow-a" d="M126 258 V272 H352 V322"/>
           <path class="arrow-a" d="M126 258 V272 H568 V322"/>
 
-          <!-- Cases -> DS Pendientes -->
-          <path class="arrow" d="M520 380 C 360 400, 200 410, 146 432"/>
+          <!-- Cases -> DS Pendientes (gap y=398 entre capas) -->
+          <path class="arrow" d="M568 380 V398 H146 V432"/>
           <!-- DS Pendientes -> Worker programado -->
-          <path class="arrow" d="M260 452 C 500 452, 700 410, 820 384"/>
+          <path class="arrow" d="M256 452 V398 H820 V380"/>
           <!-- Worker -> DS Fallidos (en error) -->
-          <path class="arrow" d="M780 380 C 600 400, 480 420, 382 436"/>
+          <path class="arrow" d="M820 380 V398 H382 V432"/>
 
-          <!-- Workers -> Salesforce -->
-          <path class="arrow" d="M236 354 H 552"/>
-          <path class="arrow" d="M452 354 H 552"/>
-          <path class="arrow" d="M668 354 C 700 380, 720 400, 736 432"/>
+          <!-- Workers -> Salesforce (gap y=395) -->
+          <path class="arrow" d="M136 380 V395 H616 V432"/>
+          <path class="arrow" d="M352 380 V395 H748 V432"/>
+          <path class="arrow" d="M568 380 V395 H880 V432"/>
 
-          <!-- Consulta flows -> Salesforce -->
-          <path class="arrow" d="M548 258 C 580 380, 620 400, 644 432"/>
-          <path class="arrow" d="M764 258 C 800 380, 820 400, 860 432"/>
-          <path class="arrow" d="M332 258 C 480 290, 700 380, 870 432"/>
+          <!-- Consulta flows -> Salesforce (margen derecho x=950) -->
+          <path class="arrow" d="M548 258 H950 V432 H616"/>
+          <path class="arrow" d="M764 258 H950 V432 H880"/>
+          <path class="arrow" d="M332 258 H950 V535 H748"/>
         </svg>
       </div>
     </section>
