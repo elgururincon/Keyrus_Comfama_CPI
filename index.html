@@ -8,10 +8,11 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700;1,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('cpi-theme')||'dark'}catch(e){}</script>
 
 <link rel="stylesheet" href="assets/style.css">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230d1b2a'/%3E%3Crect x='35' y='35' width='30' height='30' fill='%234ecdc4'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230A0A12'/%3E%3Crect x='35' y='35' width='30' height='30' fill='%23FF277E'/%3E%3C/svg%3E">
 </head>
 <body>
 <div class="app">
@@ -19,8 +20,15 @@
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="brand">
-      <span class="brand-mark"></span>Comfama · CPI
-      <small>Integración Omnicanal · v59.0</small>
+      <div class="brand-logos-card">
+        <img src="assets/images/Screenshot_4.png" alt="Keyrus AI" class="logo-keyrus-img">
+        <div class="logo-divider-vert"></div>
+        <img src="assets/images/Copilot_20260622_201558.png" alt="Comfama" class="logo-comfama-img">
+      </div>
+      <div class="brand-title">
+        <span class="brand-mark"></span>CPI · Integración Omnicanal
+      </div>
+      <small>SAP Cloud Integration · v59.0</small>
     </div>
 
     <nav class="nav" aria-label="Navegación">
@@ -37,6 +45,21 @@
     </nav>
 
     <div class="sidebar-foot">
+      <div class="theme-toggle-row">
+        <span class="theme-toggle-label" id="toggle-label">Modo claro</span>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Cambiar tema">
+          <span class="toggle-thumb">
+            <!-- sun -->
+            <svg id="ico-sun" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>
+            <!-- moon -->
+            <svg id="ico-moon" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </span>
+        </button>
+      </div>
+      <div class="author-block">
+        <span class="author-label">Presentado por</span>
+        <span class="author-name">David Rincón</span>
+      </div>
       Salesforce API · v59.0<br>
       Sandbox · qacomfama<br>
       Partner: Keyrus
@@ -84,25 +107,25 @@
         <svg viewBox="0 0 980 580" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagrama de arquitectura de los iFlows">
           <defs>
             <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
-              <path d="M0,0 L10,5 L0,10 z" fill="#9aa9bd"/>
+              <path d="M0,0 L10,5 L0,10 z" fill="#888098"/>
             </marker>
             <marker id="arr-a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
-              <path d="M0,0 L10,5 L0,10 z" fill="#4ecdc4"/>
+              <path d="M0,0 L10,5 L0,10 z" fill="#FF277E"/>
             </marker>
             <style>
-              .lbl-l{ font: 11px "JetBrains Mono", monospace; fill: #9aa9bd; letter-spacing:.15em; text-transform: uppercase;}
-              .lbl-t{ font: 600 13px "Inter Tight", sans-serif; fill: #f4ecd8;}
-              .lbl-s{ font: 11px "Inter Tight", sans-serif; fill: #c8bfa6;}
-              .lbl-mono{ font: 11px "JetBrains Mono", monospace; fill: #4ecdc4;}
-              .lyr{ fill: #11243a; stroke: #2a4365;}
-              .box{ fill: #18324f; stroke: #2a4365;}
-              .box-o{ fill: #18324f; stroke: #ff6b3d; stroke-width: 1.5;}
-              .box-w{ fill: #18324f; stroke: #4ecdc4; stroke-width: 1.2;}
-              .box-q{ fill: #18324f; stroke: #b794f4; stroke-width: 1.2;}
-              .box-s{ fill: #18324f; stroke: #e6a23c; stroke-width: 1.2;}
-              .box-x{ fill: #0d1b2a; stroke: #2a4365; stroke-dasharray: 3 3;}
-              .arrow{ stroke: #6c7c95; stroke-width: 1.2; fill: none; marker-end: url(#arr);}
-              .arrow-a{ stroke: #4ecdc4; stroke-width: 1.4; fill: none; marker-end: url(#arr-a);}
+              .lbl-l{ font: 11px "JetBrains Mono", monospace; fill: #888098; letter-spacing:.15em; text-transform: uppercase;}
+              .lbl-t{ font: 600 13px "Inter Tight", sans-serif; fill: #F0EEF8;}
+              .lbl-s{ font: 11px "Inter Tight", sans-serif; fill: #9490A8;}
+              .lbl-mono{ font: 11px "JetBrains Mono", monospace; fill: #FF277E;}
+              .lyr{ fill: #101018; stroke: #252530;}
+              .box{ fill: #181820; stroke: #252530;}
+              .box-o{ fill: #181820; stroke: #FF8C00; stroke-width: 1.5;}
+              .box-w{ fill: #181820; stroke: #FF277E; stroke-width: 1.2;}
+              .box-q{ fill: #181820; stroke: #9B7FFF; stroke-width: 1.2;}
+              .box-s{ fill: #181820; stroke: #FFB300; stroke-width: 1.2;}
+              .box-x{ fill: #0A0A12; stroke: #252530; stroke-dasharray: 3 3;}
+              .arrow{ stroke: #565068; stroke-width: 1.2; fill: none; marker-end: url(#arr);}
+              .arrow-a{ stroke: #FF277E; stroke-width: 1.4; fill: none; marker-end: url(#arr-a);}
             </style>
           </defs>
 
@@ -345,7 +368,7 @@
 
     <footer class="foot">
       <div>Generado desde los paquetes .zip de SAP Integration Suite</div>
-      <div>Keyrus · Comfama · 2026</div>
+      <div>Keyrus · Comfama · 2026 &nbsp;·&nbsp; David Rincón</div>
     </footer>
 
   </main>
@@ -353,5 +376,33 @@
 
 <script src="assets/data.js"></script>
 <script src="assets/app.js"></script>
+<script>
+(function(){
+  var root = document.documentElement;
+  var btn  = document.getElementById('theme-toggle');
+  var lbl  = document.getElementById('toggle-label');
+  var sun  = document.getElementById('ico-sun');
+  var moon = document.getElementById('ico-moon');
+
+  function apply(theme){
+    root.dataset.theme = theme;
+    localStorage.setItem('cpi-theme', theme);
+    if(theme === 'light'){
+      lbl.textContent  = 'Modo oscuro';
+      sun.style.display  = 'block';
+      moon.style.display = 'none';
+    } else {
+      lbl.textContent  = 'Modo claro';
+      sun.style.display  = 'none';
+      moon.style.display = 'block';
+    }
+  }
+
+  apply(root.dataset.theme || 'dark');
+  btn.addEventListener('click', function(){
+    apply(root.dataset.theme === 'dark' ? 'light' : 'dark');
+  });
+})();
+</script>
 </body>
 </html>
