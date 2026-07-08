@@ -719,3 +719,209 @@ a:focus-visible, button:focus-visible, summary:focus-visible{
   75%  { transform: scale(1.03) translate(-2%, 2%); }
   100% { transform: scale(1.01) translate(2%, -2%); }
 }
+
+/* ── Scroll progress bar ── */
+#scroll-progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 2px;
+  z-index: 9999;
+  background: var(--accent);
+  width: 0%;
+  transition: width .08s linear;
+  box-shadow: 0 0 12px rgba(255,39,126,.75), 0 0 4px rgba(255,39,126,.5);
+  pointer-events: none;
+}
+
+/* ── Back to top ── */
+#back-top {
+  position: fixed; bottom: 28px; right: 28px;
+  width: 44px; height: 44px;
+  background: var(--accent);
+  color: #fff;
+  border: none; cursor: pointer;
+  border-radius: 50%;
+  font-size: 18px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transform: translateY(14px);
+  transition: opacity .3s ease, transform .3s ease, box-shadow .2s ease;
+  box-shadow: 0 4px 20px rgba(255,39,126,.45);
+  z-index: 998;
+  line-height: 1;
+}
+#back-top.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
+#back-top:hover { box-shadow: 0 6px 28px rgba(255,39,126,.70); transform: translateY(-3px) !important; }
+
+/* ── Toast notification ── */
+.toast {
+  position: fixed; bottom: 82px; right: 28px;
+  background: var(--paper); color: var(--ink);
+  font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+  padding: 10px 20px; border-radius: 8px;
+  opacity: 0; pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity .25s ease, transform .25s ease;
+  z-index: 999;
+  box-shadow: 0 6px 24px rgba(0,0,0,.30);
+  white-space: nowrap;
+  letter-spacing: .04em;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* ── Search bar in sidebar ── */
+.search-wrap { margin-bottom: 10px; }
+.search-wrap input {
+  width: 100%; padding: 9px 14px;
+  background: rgba(128,120,160,0.09);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--paper);
+  font-family: var(--font-body); font-size: 13px;
+  outline: none;
+  transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+}
+.search-wrap input::placeholder { color: var(--silver-2); font-size: 12px; }
+.search-wrap input:focus {
+  border-color: var(--accent);
+  background: rgba(255,39,126,0.05);
+  box-shadow: 0 0 0 3px rgba(255,39,126,0.12);
+}
+[data-theme="light"] .search-wrap input { background: rgba(0,0,0,0.04); }
+
+/* ── Hamburger button (mobile) ── */
+.hamburger {
+  display: none;
+  position: fixed; top: 14px; left: 14px;
+  z-index: 200;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  color: var(--paper);
+  cursor: pointer;
+  padding: 9px 14px; border-radius: 8px;
+  font-family: var(--font-mono); font-size: 12px;
+  font-weight: 600; letter-spacing: .06em;
+  box-shadow: 0 2px 12px rgba(0,0,0,.18);
+  align-items: center; gap: 8px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.hamburger:hover { border-color: var(--accent); box-shadow: 0 4px 16px rgba(255,39,126,.2); }
+@media (max-width: 960px) { .hamburger { display: flex; } }
+
+/* ── Sidebar overlay (mobile) ── */
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 99;
+  opacity: 0;
+  transition: opacity .3s ease;
+  pointer-events: none;
+}
+.sidebar-overlay.active {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Mobile sidebar drawer ── */
+@media (max-width: 960px) {
+  .sidebar {
+    position: fixed !important;
+    top: 0; left: -320px;
+    height: 100vh !important;
+    width: 296px;
+    z-index: 100;
+    transition: left .3s cubic-bezier(0.4,0,0.2,1);
+    border-right: 1px solid var(--line-soft) !important;
+    border-bottom: none !important;
+    overflow-y: auto;
+  }
+  .sidebar.open { left: 0; }
+  .main { padding-top: 80px; }
+}
+
+/* ── Hero dot grid ── */
+.hero {
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: "";
+  position: absolute; inset: -30px -60px;
+  background-image: radial-gradient(circle, rgba(255,39,126,.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse 85% 80% at 40% 40%, black 20%, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse 85% 80% at 40% 40%, black 20%, transparent 85%);
+  z-index: 0;
+}
+.hero > * { position: relative; z-index: 1; }
+
+/* ── Copy button ── */
+.copy-btn {
+  font-family: var(--font-mono);
+  font-size: 9px; font-weight: 700;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--silver-2);
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  margin-left: 10px;
+  transition: color .2s ease, border-color .2s ease, background .2s ease;
+  vertical-align: middle;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.copy-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(255,39,126,0.07);
+}
+
+.card .endpoint { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.card .endpoint .path-text { flex: 1; word-break: break-all; }
+
+/* ── No results ── */
+.no-results {
+  grid-column: 1 / -1;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--silver-2);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+/* ── Card hover lift ── */
+.card {
+  transition: background .25s ease, box-shadow .25s ease, transform .2s ease;
+}
+.card:hover { transform: translateY(-2px); }
+
+/* ── Metric value animating ── */
+.metric .value { display: block; }
+
+/* ── Table copy on path cells ── */
+table.t td.k .copy-btn { margin-left: 8px; }
+
+/* ── Keyboard shortcut hint in footer ── */
+.shortcut-hint {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .15em;
+  color: var(--silver-2);
+  opacity: 0.5;
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  text-transform: uppercase;
+  margin-left: 6px;
+  vertical-align: middle;
+  display: inline-block;
+}
+@media (max-width: 960px) { .shortcut-hint { display: none; } }

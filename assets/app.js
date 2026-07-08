@@ -30,6 +30,154 @@
     ingestion: "b-ingestion",
   }[role] || "");
 
+  let activeRole = "all";
+
+  /* ── Utilities ── */
+  let _toastTimer;
+  function showToast(msg) {
+    const t = $("#toast");
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => showToast("Copiado al portapapeles ✓"));
+    } else {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.cssText = "position:fixed;opacity:0;top:0;left:0;";
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      try { document.execCommand("copy"); showToast("Copiado ✓"); } catch (_) {}
+      document.body.removeChild(ta);
+    }
+  }
+
+  function makeCopyBtn(text) {
+    const btn = el("button", { class: "copy-btn", type: "button" }, "copiar");
+    btn.addEventListener("click", e => { e.stopPropagation(); copyText(text); });
+    return btn;
+  }
+
+  /* ── Animated counter ── */
+  function countUp(target, duration) {
+    const start = performance.now();
+    const update = now => {
+      const p = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      target.textContent = Math.round(ease * Number(target.dataset.value));
+      if (p < 1) requestAnimationFrame(update);
+    };
+    requestAnimationFrame(update);
+  }
+
+  function setupCounters() {
+    const els = $$(".metric .value");
+    els.forEach(e => { e.dataset.value = e.textContent.trim(); e.textContent = "0"; });
+    const metrics = $("#metrics");
+    if (!metrics) return;
+    const io = new IntersectionObserver(entries => {
+      if (entries.some(e => e.isIntersecting)) {
+        els.forEach((e, i) => setTimeout(() => countUp(e, 1100), i * 90));
+        io.disconnect();
+      }
+    }, { rootMargin: "0px 0px -10% 0px" });
+    io.observe(metrics);
+  }
+
+  /* ── Scroll progress ── */
+  function setupScrollProgress() {
+    const bar = $("#scroll-progress");
+    if (!bar) return;
+    const update = () => {
+      const max = document.body.scrollHeight - window.innerHeight;
+      bar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + "%";
+    };
+    window.addEventListener("scroll", update, { passive: true });
+    update();
+  }
+
+  /* ── Back to top ── */
+  function setupBackTop() {
+    const btn = $("#back-top");
+    if (!btn) return;
+    window.addEventListener("scroll", () => {
+      btn.classList.toggle("visible", window.scrollY > 600);
+    }, { passive: true });
+    btn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+  }
+
+  /* ── Mobile sidebar ── */
+  function setupMobile() {
+    const hamburger = $("#hamburger");
+    const sidebar = $(".sidebar");
+    const overlay = $("#sidebar-overlay");
+    if (!hamburger || !sidebar || !overlay) return;
+
+    const open = () => { sidebar.classList.add("open"); overlay.classList.add("active"); };
+    const close = () => { sidebar.classList.remove("open"); overlay.classList.remove("active"); };
+
+    hamburger.addEventListener("click", open);
+    overlay.addEventListener("click", close);
+    $$(".nav a").forEach(a => a.addEventListener("click", close));
+  }
+
+  /* ── Search + combined card filter ── */
+  function applyCardFilters() {
+    const q = ($("#quick-search")?.value || "").toLowerCase().trim();
+    const grid = $("#flows-grid");
+    let visible = 0;
+
+    $$(".js-flow-card").forEach(card => {
+      const roleMatch = activeRole === "all" || card.dataset.role === activeRole;
+      const textMatch = !q || card.textContent.toLowerCase().includes(q);
+      const show = roleMatch && textMatch;
+      card.style.display = show ? "" : "none";
+      if (show) visible++;
+    });
+
+    if (grid) {
+      let nr = grid.querySelector(".no-results");
+      if (visible === 0 && (q || activeRole !== "all")) {
+        if (!nr) { nr = document.createElement("div"); nr.className = "no-results"; grid.appendChild(nr); }
+        nr.textContent = q ? `Sin resultados para "${q}"` : "Sin iFlows en esta categoría";
+      } else {
+        nr?.remove();
+      }
+    }
+
+    // filter script blocks too
+    $$(".scripts-block").forEach(block => {
+      block.style.display = (!q || block.textContent.toLowerCase().includes(q)) ? "" : "none";
+    });
+  }
+
+  function setupSearch() {
+    const input = $("#quick-search");
+    if (!input) return;
+    input.addEventListener("input", applyCardFilters);
+  }
+
+  /* ── Keyboard shortcuts ── */
+  function setupKeyboard() {
+    document.addEventListener("keydown", e => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      if (e.key === "t" || e.key === "T") {
+        if (!e.metaKey && !e.ctrlKey) $("#theme-toggle")?.click();
+      }
+      if (e.key === "/" || e.key === "f" || e.key === "F") {
+        if (!e.metaKey && !e.ctrlKey) {
+          e.preventDefault();
+          $("#quick-search")?.focus();
+        }
+      }
+    });
+  }
+
   /* ----- HERO meta */
   function renderMeta() {
     const m = D.meta;
@@ -73,13 +221,13 @@
       const b = el("button", {
         class: "filter" + (i === 0 ? " is-active" : ""),
         type: "button",
+        "data-role": r,
       }, roleLabels[r] || r);
       b.addEventListener("click", () => {
         $$(".filter", filtersEl).forEach(x => x.classList.remove("is-active"));
         b.classList.add("is-active");
-        $$(".js-flow-card", grid).forEach(card => {
-          card.style.display = (r === "all" || card.dataset.role === r) ? "" : "none";
-        });
+        activeRole = r;
+        applyCardFilters();
       });
       filtersEl.appendChild(b);
     });
@@ -97,9 +245,11 @@
       card.appendChild(el("h3", {}, f.name));
       card.appendChild(el("div", { class: "sub" }, `${f.participants} participantes · ${f.scripts} scripts`));
 
+      const endpointPath = f.endpoint.path;
       card.appendChild(el("div", { class: "endpoint" },
         el("span", { class: "m" }, f.endpoint.method),
-        f.endpoint.path,
+        el("span", { class: "path-text" }, endpointPath),
+        makeCopyBtn(endpointPath),
       ));
 
       card.appendChild(el("p", { class: "desc" }, f.description));
@@ -144,7 +294,7 @@
       }
       if (f.parameters) {
         dc.appendChild(el("h4", {}, "Parámetros configurables"));
-        dc.appendChild(el("ul", {}, ...f.parameters.map(p => el("li", {}, el("span", { class: "mono" }, p)))));
+        dc.appendChild(el("ul", {}, ...f.parameters.map(p => el("li", {}, el("span", { class: "mono" }, p)))));2
       }
 
       det.appendChild(dc);
@@ -161,7 +311,7 @@
       const block = el("div", { class: "scripts-block" });
       block.appendChild(el("h3", {}, flow));
       block.appendChild(el("p", { style: "color:var(--silver); font-size:13px; margin-bottom:14px;" },
-        `${scripts.length} script${scripts.length>1 ? "s" : ""} Groovy`));
+        `${scripts.length} script${scripts.length > 1 ? "s" : ""} Groovy`));
       const ul = el("ul", {});
       scripts.forEach(s => {
         ul.appendChild(el("li", {},
@@ -178,9 +328,13 @@
   function renderEndpoints() {
     const tbody = $("#endpoints-body");
     D.endpoints.forEach(e => {
+      const pathCell = el("td", { class: "k" });
+      pathCell.appendChild(document.createTextNode(e.path));
+      if (e.method !== "Cron") pathCell.appendChild(makeCopyBtn(e.path));
+
       tbody.appendChild(el("tr", {},
         el("td", { class: "method" }, e.method),
-        el("td", { class: "k" }, e.path),
+        pathCell,
         el("td", { class: "v" }, e.flow),
         el("td", { class: "v" }, e.purpose),
       ));
@@ -270,6 +424,7 @@
     }, { rootMargin: "-30% 0px -60% 0px" });
     sections.forEach(s => io.observe(s));
   }
+
   function setupReveal() {
     const els = $$(".reveal");
     const io = new IntersectionObserver(entries => {
@@ -295,5 +450,12 @@
     renderParameters();
     setupScrollspy();
     setupReveal();
+    // new
+    setupScrollProgress();
+    setupBackTop();
+    setupCounters();
+    setupMobile();
+    setupSearch();
+    setupKeyboard();
   });
 })();

@@ -15,6 +15,8 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230A0A12'/%3E%3Crect x='35' y='35' width='30' height='30' fill='%23FF277E'/%3E%3C/svg%3E">
 </head>
 <body>
+<div id="scroll-progress"></div>
+<button class="hamburger" id="hamburger" aria-label="Abrir menú">≡ Menú</button>
 <div class="app">
 
   <!-- Sidebar -->
@@ -32,6 +34,9 @@
     </div>
 
     <nav class="nav" aria-label="Navegación">
+      <div class="search-wrap">
+        <input type="search" id="quick-search" placeholder="Buscar iFlow, script…" autocomplete="off" spellcheck="false">
+      </div>
       <a href="#overview">Resumen<span class="count">01</span></a>
       <a href="#architecture">Arquitectura<span class="count">02</span></a>
       <a href="#flows">iFlows<span class="count">8</span></a>
@@ -46,7 +51,7 @@
 
     <div class="sidebar-foot">
       <div class="theme-toggle-row">
-        <span class="theme-toggle-label" id="toggle-label">Modo claro</span>
+        <span class="theme-toggle-label" id="toggle-label">Modo claro</span><kbd class="shortcut-hint">T</kbd>
         <button class="theme-toggle" id="theme-toggle" aria-label="Cambiar tema">
           <span class="toggle-thumb">
             <!-- sun -->
@@ -373,6 +378,10 @@
 
   </main>
 </div>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<button id="back-top" aria-label="Volver al inicio">↑</button>
 
 <script src="assets/data.js"></script>
 <script src="assets/app.js"></script>
