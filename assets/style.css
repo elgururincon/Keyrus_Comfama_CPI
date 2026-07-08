@@ -64,7 +64,7 @@
 }
 
 *,*::before,*::after{ box-sizing: border-box; margin: 0; padding: 0; }
-html{ scroll-behavior: smooth; }
+html{ scroll-behavior: smooth; overflow-x: hidden; }
 body{
   font-family: var(--font-body);
   font-size: 15px;
@@ -335,7 +335,7 @@ body::after{
 .toggle-thumb svg{ width: 9px; height: 9px; stroke: white; fill: none; }
 
 /* ── Main ── */
-.main{ padding: 60px clamp(28px, 5vw, 80px) 120px; max-width: 1200px; }
+.main{ padding: 60px clamp(28px, 5vw, 72px) 120px; min-width: 0; width: 100%; }
 
 /* ── Hero ── */
 .hero{ margin-bottom: 80px; }
@@ -808,19 +808,19 @@ a:focus-visible, button:focus-visible, summary:focus-visible{
 
 /* ── Sidebar overlay (mobile) ── */
 .sidebar-overlay {
-  display: none;
   position: fixed; inset: 0;
   background: rgba(0,0,0,.55);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   z-index: 99;
   opacity: 0;
-  transition: opacity .3s ease;
+  visibility: hidden;
+  transition: opacity .3s ease, visibility .3s ease;
   pointer-events: none;
 }
 .sidebar-overlay.active {
-  display: block;
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
 }
 
@@ -844,16 +844,15 @@ a:focus-visible, button:focus-visible, summary:focus-visible{
 /* ── Hero dot grid ── */
 .hero {
   position: relative;
-  overflow: hidden;
 }
 .hero::before {
   content: "";
-  position: absolute; inset: -30px -60px;
-  background-image: radial-gradient(circle, rgba(255,39,126,.08) 1px, transparent 1px);
-  background-size: 28px 28px;
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle, rgba(255,39,126,.09) 1px, transparent 1px);
+  background-size: 26px 26px;
   pointer-events: none;
-  mask-image: radial-gradient(ellipse 85% 80% at 40% 40%, black 20%, transparent 85%);
-  -webkit-mask-image: radial-gradient(ellipse 85% 80% at 40% 40%, black 20%, transparent 85%);
+  mask-image: radial-gradient(ellipse 90% 90% at 30% 40%, black 10%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 90% at 30% 40%, black 10%, transparent 80%);
   z-index: 0;
 }
 .hero > * { position: relative; z-index: 1; }
@@ -884,6 +883,32 @@ a:focus-visible, button:focus-visible, summary:focus-visible{
 
 .card .endpoint { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
 .card .endpoint .path-text { flex: 1; word-break: break-all; }
+
+/* ── Sidebar close button (mobile only) ── */
+.sidebar-close-btn {
+  display: none;
+  background: none; border: none; cursor: pointer;
+  color: var(--paper-mute); padding: 4px 8px;
+  font-size: 20px; line-height: 1; border-radius: 6px;
+  transition: color .2s, background .2s;
+  margin-left: auto; flex-shrink: 0;
+}
+.sidebar-close-btn:hover { color: var(--paper); background: rgba(128,120,160,0.1); }
+@media (max-width: 960px) { .sidebar-close-btn { display: block; } }
+
+/* ── Search results counter ── */
+.search-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .12em;
+  color: var(--silver-2);
+  padding: 3px 0 8px;
+  display: none;
+  text-transform: uppercase;
+  transition: color .2s;
+}
+.search-count.active { display: block; }
+.search-count b { color: var(--accent); }
 
 /* ── No results ── */
 .no-results {

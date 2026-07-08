@@ -24,15 +24,15 @@
 
   const roleBadge = role => ({
     orchestrator: "b-orchestrator",
-    worker: "b-worker",
-    query: "b-query",
-    scheduled: "b-scheduled",
-    ingestion: "b-ingestion",
+    worker:       "b-worker",
+    query:        "b-query",
+    scheduled:    "b-scheduled",
+    ingestion:    "b-ingestion",
   }[role] || "");
 
   let activeRole = "all";
 
-  /* ── Utilities ── */
+  /* ── Toast ── */
   let _toastTimer;
   function showToast(msg) {
     const t = $("#toast");
@@ -40,12 +40,13 @@
     t.textContent = msg;
     t.classList.add("show");
     clearTimeout(_toastTimer);
-    _toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+    _toastTimer = setTimeout(() => t.classList.remove("show"), 2400);
   }
 
+  /* ── Copy to clipboard ── */
   function copyText(text) {
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(() => showToast("Copiado al portapapeles ✓"));
+      navigator.clipboard.writeText(text).then(() => showToast("Copiado ✓"));
     } else {
       const ta = document.createElement("textarea");
       ta.value = text;
@@ -65,11 +66,12 @@
 
   /* ── Animated counter ── */
   function countUp(target, duration) {
+    const val = Number(target.dataset.value);
     const start = performance.now();
     const update = now => {
       const p = Math.min((now - start) / duration, 1);
       const ease = 1 - Math.pow(1 - p, 3);
-      target.textContent = Math.round(ease * Number(target.dataset.value));
+      target.textContent = Math.round(ease * val);
       if (p < 1) requestAnimationFrame(update);
     };
     requestAnimationFrame(update);
@@ -82,20 +84,20 @@
     if (!metrics) return;
     const io = new IntersectionObserver(entries => {
       if (entries.some(e => e.isIntersecting)) {
-        els.forEach((e, i) => setTimeout(() => countUp(e, 1100), i * 90));
+        els.forEach((e, i) => setTimeout(() => countUp(e, 1000), i * 80));
         io.disconnect();
       }
-    }, { rootMargin: "0px 0px -10% 0px" });
+    }, { rootMargin: "0px 0px -5% 0px" });
     io.observe(metrics);
   }
 
-  /* ── Scroll progress ── */
+  /* ── Scroll progress bar ── */
   function setupScrollProgress() {
     const bar = $("#scroll-progress");
     if (!bar) return;
     const update = () => {
       const max = document.body.scrollHeight - window.innerHeight;
-      bar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + "%";
+      bar.style.width = (max > 0 ? Math.min((window.scrollY / max) * 100, 100) : 0) + "%";
     };
     window.addEventListener("scroll", update, { passive: true });
     update();
@@ -106,7 +108,7 @@
     const btn = $("#back-top");
     if (!btn) return;
     window.addEventListener("scroll", () => {
-      btn.classList.toggle("visible", window.scrollY > 600);
+      btn.classList.toggle("visible", window.scrollY > 500);
     }, { passive: true });
     btn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
   }
@@ -114,43 +116,70 @@
   /* ── Mobile sidebar ── */
   function setupMobile() {
     const hamburger = $("#hamburger");
-    const sidebar = $(".sidebar");
-    const overlay = $("#sidebar-overlay");
+    const sidebar   = $(".sidebar");
+    const overlay   = $("#sidebar-overlay");
+    const closeBtn  = $("#sidebar-close");
     if (!hamburger || !sidebar || !overlay) return;
 
-    const open = () => { sidebar.classList.add("open"); overlay.classList.add("active"); };
-    const close = () => { sidebar.classList.remove("open"); overlay.classList.remove("active"); };
+    function open() {
+      sidebar.classList.add("open");
+      overlay.classList.add("active");
+      document.body.style.overflow = "hidden";
+      hamburger.textContent = "× Cerrar";
+    }
+    function close() {
+      sidebar.classList.remove("open");
+      overlay.classList.remove("active");
+      document.body.style.overflow = "";
+      hamburger.textContent = "≡ Menú";
+    }
 
-    hamburger.addEventListener("click", open);
+    hamburger.addEventListener("click", () => {
+      sidebar.classList.contains("open") ? close() : open();
+    });
     overlay.addEventListener("click", close);
+    if (closeBtn) closeBtn.addEventListener("click", close);
     $$(".nav a").forEach(a => a.addEventListener("click", close));
   }
 
-  /* ── Search + combined card filter ── */
+  /* ── Combined card + script filter ── */
   function applyCardFilters() {
-    const q = ($("#quick-search")?.value || "").toLowerCase().trim();
-    const grid = $("#flows-grid");
-    let visible = 0;
+    const q       = ($("#quick-search")?.value || "").toLowerCase().trim();
+    const grid    = $("#flows-grid");
+    const counter = $("#search-count");
+    let visible   = 0;
+    const total   = D.flows.length;
 
     $$(".js-flow-card").forEach(card => {
       const roleMatch = activeRole === "all" || card.dataset.role === activeRole;
       const textMatch = !q || card.textContent.toLowerCase().includes(q);
-      const show = roleMatch && textMatch;
+      const show      = roleMatch && textMatch;
       card.style.display = show ? "" : "none";
       if (show) visible++;
     });
 
+    // no-results message inside grid
     if (grid) {
       let nr = grid.querySelector(".no-results");
-      if (visible === 0 && (q || activeRole !== "all")) {
+      if (visible === 0) {
         if (!nr) { nr = document.createElement("div"); nr.className = "no-results"; grid.appendChild(nr); }
-        nr.textContent = q ? `Sin resultados para "${q}"` : "Sin iFlows en esta categoría";
+        nr.textContent = q ? "Sin resultados para \"" + q + "\"" : "Sin iFlows en esta categoría";
       } else {
         nr?.remove();
       }
     }
 
-    // filter script blocks too
+    // counter below search input
+    if (counter) {
+      if (q) {
+        counter.innerHTML = "<b>" + visible + "</b> de " + total + " iFlows";
+        counter.classList.add("active");
+      } else {
+        counter.classList.remove("active");
+      }
+    }
+
+    // filter scripts section too
     $$(".scripts-block").forEach(block => {
       block.style.display = (!q || block.textContent.toLowerCase().includes(q)) ? "" : "none";
     });
@@ -160,36 +189,44 @@
     const input = $("#quick-search");
     if (!input) return;
     input.addEventListener("input", applyCardFilters);
+    // Escape clears the search
+    input.addEventListener("keydown", e => {
+      if (e.key === "Escape") {
+        input.value = "";
+        applyCardFilters();
+        input.blur();
+      }
+    });
   }
 
   /* ── Keyboard shortcuts ── */
   function setupKeyboard() {
     document.addEventListener("keydown", e => {
-      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
-      if (e.key === "t" || e.key === "T") {
-        if (!e.metaKey && !e.ctrlKey) $("#theme-toggle")?.click();
+      const inInput = e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA";
+      if (e.metaKey || e.ctrlKey) return;
+
+      if (!inInput && (e.key === "t" || e.key === "T")) {
+        $("#theme-toggle")?.click();
       }
-      if (e.key === "/" || e.key === "f" || e.key === "F") {
-        if (!e.metaKey && !e.ctrlKey) {
-          e.preventDefault();
-          $("#quick-search")?.focus();
-        }
+      if (!inInput && (e.key === "/" || e.key === "k" || e.key === "K")) {
+        e.preventDefault();
+        $("#quick-search")?.focus();
       }
     });
   }
 
-  /* ----- HERO meta */
+  /* ----- HERO meta ── */
   function renderMeta() {
-    const m = D.meta;
+    const m  = D.meta;
     const dl = $("#meta-grid");
     [
-      ["Proyecto", m.name],
-      ["Partner", m.partner],
-      ["Plataforma", "SAP Cloud Integration"],
-      ["Destino", "Salesforce Sandbox"],
-      ["Tenant", "qacomfama"],
+      ["Proyecto",       m.name],
+      ["Partner",        m.partner],
+      ["Plataforma",     "SAP Cloud Integration"],
+      ["Destino",        "Salesforce Sandbox"],
+      ["Tenant",         "qacomfama"],
       ["API Salesforce", m.apiVersion],
-      ["iFlows", m.flowsCount],
+      ["iFlows",         m.flowsCount],
       ["Canales fuente", "Genesys · Comfama"],
     ].forEach(([k, v]) => {
       dl.appendChild(el("div", {},
@@ -209,14 +246,17 @@
     });
   }
 
-  /* ----- FLOWS */
+  /* ----- FLOWS ── */
   function renderFlows() {
-    const grid = $("#flows-grid");
-
-    // filters
+    const grid      = $("#flows-grid");
     const filtersEl = $("#flow-filters");
+
     const roles = ["all", ...Array.from(new Set(D.flows.map(f => f.role)))];
-    const roleLabels = { all: "Todos", orchestrator: "Orquestador", worker: "Worker", query: "Consulta", scheduled: "Programado", ingestion: "Ingesta" };
+    const roleLabels = {
+      all: "Todos", orchestrator: "Orquestador", worker: "Worker",
+      query: "Consulta", scheduled: "Programado", ingestion: "Ingesta",
+    };
+
     roles.forEach((r, i) => {
       const b = el("button", {
         class: "filter" + (i === 0 ? " is-active" : ""),
@@ -239,29 +279,26 @@
       });
 
       card.appendChild(el("div", { class: "badges" },
-        el("span", { class: `badge ${roleBadge(f.role)}` }, f.type),
-        el("span", { class: "badge" }, `${f.lines} líneas`),
+        el("span", { class: "badge " + roleBadge(f.role) }, f.type),
+        el("span", { class: "badge" }, f.lines + " líneas"),
       ));
       card.appendChild(el("h3", {}, f.name));
-      card.appendChild(el("div", { class: "sub" }, `${f.participants} participantes · ${f.scripts} scripts`));
+      card.appendChild(el("div", { class: "sub" }, f.participants + " participantes · " + f.scripts + " scripts"));
 
-      const endpointPath = f.endpoint.path;
       card.appendChild(el("div", { class: "endpoint" },
         el("span", { class: "m" }, f.endpoint.method),
-        el("span", { class: "path-text" }, endpointPath),
-        makeCopyBtn(endpointPath),
+        el("span", { class: "path-text" }, f.endpoint.path),
+        makeCopyBtn(f.endpoint.path),
       ));
 
       card.appendChild(el("p", { class: "desc" }, f.description));
 
-      // stat row
       const statRow = el("div", { class: "stat-row" });
       if (f.subprocesses) statRow.appendChild(el("div", {}, el("b", {}, String(f.subprocesses.length)), " sub-procesos"));
       if (f.mappings)     statRow.appendChild(el("div", {}, el("b", {}, String(f.mappings.length)),     " mappings"));
       if (f.receivers)    statRow.appendChild(el("div", {}, el("b", {}, String(f.receivers.length)),    " receivers"));
       if (statRow.children.length) card.appendChild(statRow);
 
-      // details
       const det = el("details", { class: "details" });
       det.appendChild(el("summary", {}, "Lógica & técnica"));
       const dc = el("div", { class: "det-content" });
@@ -294,24 +331,23 @@
       }
       if (f.parameters) {
         dc.appendChild(el("h4", {}, "Parámetros configurables"));
-        dc.appendChild(el("ul", {}, ...f.parameters.map(p => el("li", {}, el("span", { class: "mono" }, p)))));2
+        dc.appendChild(el("ul", {}, ...f.parameters.map(p => el("li", {}, el("span", { class: "mono" }, p)))));
       }
 
       det.appendChild(dc);
       card.appendChild(det);
-
       grid.appendChild(card);
     });
   }
 
-  /* ----- SCRIPTS by flow */
+  /* ----- SCRIPTS ── */
   function renderScripts() {
     const wrap = $("#scripts-wrap");
     Object.entries(D.scripts).forEach(([flow, scripts]) => {
       const block = el("div", { class: "scripts-block" });
       block.appendChild(el("h3", {}, flow));
       block.appendChild(el("p", { style: "color:var(--silver); font-size:13px; margin-bottom:14px;" },
-        `${scripts.length} script${scripts.length > 1 ? "s" : ""} Groovy`));
+        scripts.length + " script" + (scripts.length > 1 ? "s" : "") + " Groovy"));
       const ul = el("ul", {});
       scripts.forEach(s => {
         ul.appendChild(el("li", {},
@@ -324,7 +360,7 @@
     });
   }
 
-  /* ----- ENDPOINTS table */
+  /* ----- ENDPOINTS table ── */
   function renderEndpoints() {
     const tbody = $("#endpoints-body");
     D.endpoints.forEach(e => {
@@ -341,7 +377,7 @@
     });
   }
 
-  /* ----- EXTERNAL systems */
+  /* ----- EXTERNAL systems ── */
   function renderExternals() {
     const grid = $("#externals-grid");
     D.externalSystems.forEach(s => {
@@ -367,7 +403,7 @@
     });
   }
 
-  /* ----- XSDs and mappings tables */
+  /* ----- XSDs + Mappings ── */
   function renderXSDs() {
     const tbody = $("#xsds-body");
     D.xsds.forEach(x => {
@@ -389,7 +425,7 @@
     });
   }
 
-  /* ----- PARAMETERS */
+  /* ----- PARAMETERS ── */
   function renderParameters() {
     const wrap = $("#parameters-wrap");
     D.parameters.forEach(group => {
@@ -410,9 +446,9 @@
     });
   }
 
-  /* ----- Scrollspy + reveal */
+  /* ----- Scrollspy ── */
   function setupScrollspy() {
-    const links = $$(".nav a[href^='#']");
+    const links    = $$(".nav a[href^='#']");
     const sections = links.map(a => document.getElementById(a.getAttribute("href").slice(1))).filter(Boolean);
     const io = new IntersectionObserver(entries => {
       entries.forEach(e => {
@@ -425,19 +461,17 @@
     sections.forEach(s => io.observe(s));
   }
 
+  /* ----- Reveal on scroll ── */
   function setupReveal() {
-    const els = $$(".reveal");
     const io = new IntersectionObserver(entries => {
       entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.classList.add("in");
-          io.unobserve(e.target);
-        }
+        if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
       });
     }, { rootMargin: "0px 0px -10% 0px" });
-    els.forEach(s => io.observe(s));
+    $$(".reveal").forEach(s => io.observe(s));
   }
 
+  /* ----- Bootstrap ── */
   document.addEventListener("DOMContentLoaded", () => {
     renderMeta();
     renderMetrics();
@@ -450,7 +484,6 @@
     renderParameters();
     setupScrollspy();
     setupReveal();
-    // new
     setupScrollProgress();
     setupBackTop();
     setupCounters();
